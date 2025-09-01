@@ -1,0 +1,41 @@
+.container {
+    max-width: 340px;  /* Set max-width to match the width of the vertical pitch */
+    text-align: center;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.pitch {
+    position: relative;
+    width: 100%; 
+    padding-top: 154.41%;  /* For a 68:105 aspect ratio */
+    background-image: url('pitch_diagram.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 0px solid black;
+    border-radius: 1px;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+}
+
+.action-button-export, .action-button-reset, .action-button-undo {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    margin: 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.action-button-undo {
+    background-color: darkorange;
+}
+
+.action-button-reset {
+    background-color: #da190b; /* Red for reset button */
+}
+
+
