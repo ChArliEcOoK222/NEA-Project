@@ -35,7 +35,17 @@
 }
 
 .action-button-reset {
-    background-color: #da190b; /* Red for reset button */
+    background-color: #da190b;
+}
+
+
+.event-marker {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: red;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
 }
 
 
