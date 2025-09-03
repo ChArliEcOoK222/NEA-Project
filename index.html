@@ -10,16 +10,43 @@
 
 
 <body>
-    <div class="container">
+    <div class="pitch-container">
         <h1>Shot Logger</h1>
 
-        <div class="pitch" onclick="recordEvent(event)">
+        <div class="pitch" onclick="recordShot(event)">
             <!--Each displayed shot location tag is added here dynamically thanks to the Javascript code-->
         </div>
 
-        <button class="action-button-reset">Reset log</button>
-        <button class="action-button-export">Export data</button>
-        <button class="action-button-undo">Undo event</button>
+        <button class="reset-button">Reset log</button>
+        <button class="export-button">Export data</button>
+        <button class="undo-button">Undo event</button>
+
+        <div class="information-popup" id="informationPopup">
+            <div class="button-row">
+                <div class="row-heading">Shot or Goal</div>
+                <button class="dropdown-button">Shot</button>
+                <button class="dropdown-button">Goal</button>
+            </div>
+            <div class="button-row">
+                <div class="row-heading">Type of shot</div>
+                <button class="dropdown-button">Footed Shot</button>
+                <button class="dropdown-button">Headed Shot</button>
+                <button class="dropdown-button">Other Shot</button>
+            </div>
+            <div class="button-row">
+                <div class="row-heading">Player</div>
+                <button class="player-button">Left Winger</button>
+                <button class="player-button">Striker</button>
+                <button class="player-button">Right Winger</button>
+                <button class="player-button">Left Mid</button>
+                <button class="player-button">Centre Mid</button>
+                <button class="player-button">Right Mid</button>
+                <button class="player-button">Left Back</button>
+                <button class="player-button">Centre Back</button>
+                <button class="player-button">Right Back</button>
+                <button class="player-button">Goalkeeper</button>
+            </div>
+        </div>
 
 
         <script src="script.js"></script>
