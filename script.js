@@ -113,6 +113,8 @@ function exportShots() {
     // generate a url for the file
     let url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
+    // setting the filename
+    link.setAttribute("download", "shots_exports.csv")
     // make the link invisible
     link.style.visibility = 'hidden';
     // add the link to ensure that it exists
