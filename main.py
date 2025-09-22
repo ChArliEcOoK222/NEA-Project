@@ -14,12 +14,11 @@ shots['Angle'] = np.arctan(np.absolute(shots['x'] - 34) / np.absolute(shots['y']
 shots['Distance'] = np.sqrt((shots['x'] - 34)**2 + (shots['y'] - 105)**2)
 
 # Creating the Expected Goals Model
-xGmodel = joblib.load('xGmodel')       
+xGmodel = joblib.load('xGmodel.pkl')       
 
 # Calculating expected goals
 xG = xGmodel.predict_proba(shots[['Distance', 'Angle']])[:,1]
 shots['xG'] = xG
 shots.to_csv('expected goals.csv')
-
 
 
