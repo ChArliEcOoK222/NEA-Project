@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import OneHotEncoder
 import joblib
 import os
 import json
@@ -46,6 +47,11 @@ shots = pd.DataFrame(data)
 shots['Angle'] = np.arctan(np.absolute(shots['x'] - 40) / np.absolute(shots['y'] - 120))
 shots['Distance'] = np.sqrt((shots['x'] - 120)**2 + (shots['y'] - 40)**2)
 
+# Encoding shot type as binary
+encoder = OneHotEncoder(sparse=False)
+shot_type_encoded = encoder.fit_transform(shots[['body_part']])
+shot_types = pd.DataFrame(shot_type_encoded, columns=encoder.get_feature_names_out(['body_part']))
+
 # Creating a binary column
 shots["Binary"] = 0
 # Assigning a binary value to each shot
@@ -53,8 +59,15 @@ for index, row in shots.iterrows():
     if row['outcome'] == 'Goal':
         shots.at[index, 'Binary'] = 1
 
-# Creating the Expected Goals Model
-xGmodel = joblib.load('xGmodel.pkl')       
+# Training and saving the model
+X = pd.concat([shots[['distance', 'angle']], shot_types], axis=1)
+y = shots["Binary"]
+
+xGmodel = LogisticRegression()
+xGmodel.fit(X, y)
+joblib.dump(xGmodel)
+
+
 
 # Calculating expected goals
 xG = xGmodel.predict_proba(shots[['Distance', 'Angle']])[:,1]
