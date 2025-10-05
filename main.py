@@ -17,28 +17,32 @@ data = []
 # Iterating over all files in the events path
 for file in os.listdir(path):
     # Creating the specific path name of the file
-    path = os.path.join(path, file)
+    file_path = os.path.join(path, file)
     # Reading the content of the json file
-    content = open(path, "r")
+    content = open(file_path, "r")
     # Saving the content to a variable
     events = json.load(content)
 
     # Iterating over the content to locate the shots
     for event in events:
-        # Locating the shots from within the file
-        if event ["type"]["name"] == "Shot":
-            # Saving the relevant data to a new variable
-            shot = {
-                "x": event["location"][0],
-                "y": event["location"][1],
-                "body_part": event["shot"]["body_part"]["name"],
-                "outcome": event["shot"]["outcome"]["name"],
-                "statsbomb_xg": event["shot"]["statsbomb_xg"]["name"]
-            }
-            # Appending the data to the list
-            data.append(shot)
-
-
+        try:
+            # Locating the shots from within the file
+            if event ["type"]["name"] == "Shot":
+                # Attempts to access location 
+                loc = event.get("location", [None, None])
+                # Saving the relevant data to a new variable
+                shot = {
+                    "x": loc[0],
+                    "y": loc[1],
+                    "body_part": event["shot"]["body_part"]["name"],
+                    "outcome": event["shot"]["outcome"]["name"],
+                    "statsbomb_xg": event["shot"]["statsbomb_xg"]["name"]
+                }
+                # Appending the data to the list
+                data.append(shot)
+        # Ensuring the code does not crash
+        except (TypeError, IndexError, KeyError):
+            pass
 
 # Loading the data into a pandas Dataframe
 shots = pd.DataFrame(data)
@@ -62,9 +66,9 @@ for index, row in shots.iterrows():
 # Training and saving the model
 X = pd.concat([shots[['distance', 'angle']], shot_types], axis=1)
 y = shots["Binary"]
-
 xGmodel = LogisticRegression()
 xGmodel.fit(X, y)
+# Saving the model for future use
 joblib.dump(xGmodel)
 
 
