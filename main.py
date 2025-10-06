@@ -16,12 +16,16 @@ data = []
 
 # Iterating over all files in the events path
 for file in os.listdir(path):
+
+    # Code can only run if the file is JSON
+    if not file.endswith(".json"):
+        continue
+
     # Creating the specific path name of the file
     file_path = os.path.join(path, file)
     # Reading the content of the json file
-    content = open(file_path, "r")
-    # Saving the content to a variable
-    events = json.load(content)
+    with open(file_path, "r") as content:
+        events = json.load(content)
 
     # Iterating over the content to locate the shots
     for event in events:
@@ -64,7 +68,7 @@ for index, row in shots.iterrows():
         shots.at[index, 'Binary'] = 1
 
 # Training and saving the model
-X = pd.concat([shots[['distance', 'angle']], shot_types], axis=1)
+X = pd.concat([shots[['Distance', 'Angle']], shot_types], axis=1)
 y = shots["Binary"]
 xGmodel = LogisticRegression()
 xGmodel.fit(X, y)
