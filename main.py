@@ -16,22 +16,20 @@ shots = pd.read_csv("/Users/charlie/Downloads/shots_exports.csv")
 shots['Angle'] = np.arctan(np.absolute(shots['x'] - 34) / np.absolute(shots['y'] - 105))
 shots['Distance'] = np.sqrt((shots['x'] - 34)**2 + (shots['y'] - 105)**2)
 
+# Map text shot types to the numeric codes used during training
+mapping = {
+    'Left Footed': 1.0,
+    'Right Footed': 2.0,
+    'Headed': 3.0,
+    'Other': 4.0
+}
+
+shots[' shotType'] = shots['type'].map(mapping)
+
 # Encoding the shot types 
-type_encoder = OneHotEncoder(sparse_output=False)
-encoded_shots = type_encoder.fit_transform(shots[['type']])
-encoded_shot_types = pd.DataFrame(encoded_shots, columns=type_encoder.get_feature_names_out(['type']))
-
-# Renaming encoded columns
-new_names = {'type_Left_Footed': ' shotType_1.0', 'type_Right_Footed': ' shotType_2.0', 'type_Headed': ' shotType_3.0', 'type_Other': ' shotType_4.0'}
-
-encoded_shot_types.rename(columns=new_names, inplace=True)
-
-# Ensure all expected columns exist, even if missing in current data
-for col in [' shotType_1.0', ' shotType_2.0', ' shotType_3.0', ' shotType_4.0']:
-    if col not in encoded_shot_types.columns:
-        encoded_shot_types[col] = 0  # fill with zeros
-
-encoded_shot_types = encoded_shot_types[[' shotType_1.0', ' shotType_2.0', ' shotType_3.0', ' shotType_4.0']]
+type_encoder = joblib.load('type_encoder.pkl')
+encoded_shots = type_encoder.transform(shots[[' shotType']])
+encoded_shot_types = pd.DataFrame(encoded_shots, columns=type_encoder.get_feature_names_out([' shotType']))
 
 # Loading the trained expected goals model
 xGmodel = joblib.load('xG_model.pkl')
