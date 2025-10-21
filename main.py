@@ -4,42 +4,49 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import OneHotEncoder
 import joblib
 import os
 import json
+import glob
 
 # Loading the shots
-shots = pd.read_csv("/Users/charlie/Downloads/shots_exports.csv")
+folders = ['/Users/charlie/Documents/Training Data', '/Users/charlie/Downloads/drive-download-20251021T125250Z-1-001']
+files = []
 
-# Calculating angle and distance
+for folder in folders:
+    files.extend(glob.glob(os.path.join(folder, '*.csv')))
+
+# List to store individual DataFrames
+dataframes = []
+
+# Reading each individual file
+for file in files:
+    df = pd.read_csv(file)
+    dataframes.append(df)
+
+shots = pd.concat(dataframes, ignore_index=True)
+
+# Calculating the distance from the goal and angle of the shot
 shots['Angle'] = np.arctan(np.absolute(shots['x'] - 34) / np.absolute(shots['y'] - 105))
 shots['Distance'] = np.sqrt((shots['x'] - 34)**2 + (shots['y'] - 105)**2)
 
-# Map text shot types to the numeric codes used during training
-mapping = {
-    'Left Footed': 1.0,
-    'Right Footed': 2.0,
-    'Headed': 3.0,
-    'Other': 4.0
-}
+# Encoding the shot types
+shot_types = pd.get_dummies(shots['type'], prefix='shot_type')
 
-shots[' shotType'] = shots['type'].map(mapping)
+# Creating a binary column
+shots['Binary'] = 0
+# Assigning a binary value for each shot
+for index, row in shots.iterrows():
+    if row['outcome'] == 'Goal':
+        shots.at[index, 'Binary'] = 1
 
-# Encoding the shot types 
-type_encoder = joblib.load('type_encoder.pkl')
-encoded_shots = type_encoder.transform(shots[[' shotType']])
-encoded_shot_types = pd.DataFrame(encoded_shots, columns=type_encoder.get_feature_names_out([' shotType']))
-
-# Loading the trained expected goals model
-xGmodel = joblib.load('xG_model.pkl')
-
-# Combining the Angle and Distance with the encoded shot types as input
-features = pd.concat([shots[['Distance', 'Angle']].reset_index(drop=True), encoded_shot_types.reset_index(drop=True)], axis=1)
-# Calculating expected goals
-xG = xGmodel.predict_proba(features)[:, 1]
-
-# Saving the data to a CSV file
-shots['xG'] = xG
-shots.to_csv('expected_goals.csv', index=False)
+# Creating the Expected Gaols Model
+xGmodel = LogisticRegression()
+# Training data
+X = pd.concat([shots[['Angle', 'Distance']], shot_types], axis=1)
+y = shots['Binary']
+# Fitting the model to this data
+xGmodel.fit(X, y)
+# Saving the model
+joblib.dump(xGmodel, 'xG_model.pkl')
 
