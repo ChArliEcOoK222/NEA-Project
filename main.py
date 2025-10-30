@@ -4,49 +4,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import OneHotEncoder
 import joblib
 import os
 import json
 import glob
 
-# Loading the shots
-folders = ['/Users/charlie/Documents/Training Data', '/Users/charlie/Downloads/drive-download-20251021T125250Z-1-001']
-files = []
-
-for folder in folders:
-    files.extend(glob.glob(os.path.join(folder, '*.csv')))
-
-# List to store individual DataFrames
-dataframes = []
-
-# Reading each individual file
-for file in files:
-    df = pd.read_csv(file)
-    dataframes.append(df)
-
-shots = pd.concat(dataframes, ignore_index=True)
+# Loading shot types
+shots = pd.read_csv("/Users/charlie/Downloads/shots_exports.csv")
 
 # Calculating the distance from the goal and angle of the shot
 shots['Angle'] = np.arctan(np.absolute(shots['x'] - 34) / np.absolute(shots['y'] - 105))
 shots['Distance'] = np.sqrt((shots['x'] - 34)**2 + (shots['y'] - 105)**2)
 
-# Encoding the shot types
-shot_types = pd.get_dummies(shots['type'], prefix='shot_type')
+# Encode shot types using OneHotEncoder
+shot_encoder = joblib.load('shot_encoder.pkl')
+shot_types_encoded = shot_encoder.transform(shots[['type']])
+shot_types_df = pd.DataFrame(shot_types_encoded, columns=["shot_type_Left Footed", "shot_type_Right Footed", "shot_type_Headed", "shot_type_Other"], index=shots.index)
 
-# Creating a binary column
-shots['Binary'] = 0
-# Assigning a binary value for each shot
-for index, row in shots.iterrows():
-    if row['outcome'] == 'Goal':
-        shots.at[index, 'Binary'] = 1
-
-# Creating the Expected Gaols Model
-xGmodel = LogisticRegression()
-# Training data
-X = pd.concat([shots[['Angle', 'Distance']], shot_types], axis=1)
-y = shots['Binary']
-# Fitting the model to this data
-xGmodel.fit(X, y)
-# Saving the model
-joblib.dump(xGmodel, 'xG_model.pkl')
+# Loading the Expected Gaols Model
+xGmodel = joblib.load('xG_model.pkl')
+# Model features
+features = pd.concat([shots[['Angle', 'Distance']], shot_types_df], axis=1)
+# Calculating and saving the results
+shots['xG'] = xGmodel.predict_proba(features)[:, 1]
+shots.to_csv('expected_goals.csv', index=False)
 
