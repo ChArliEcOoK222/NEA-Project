@@ -26,11 +26,10 @@ for _, shot in data.iterrows():
         color=colours.get(shot['outcome'], 'blue')
     )
 
-    label = f"{shot['position']} ({shot['timestamp']})"
     ax.text(
         shot['x'] + 0.7,
         shot['y'] + 0.7,
-        label, 
+        shot['position'], 
         fontsize=8, 
         color='black'
     )
